@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>fmb — тетрис</title>
+    <link rel="icon" type="image/png" href="fmb.png">
+    <link rel="apple-touch-icon" href="fmb.png">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #010101;
+            color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+            font-weight: 400;
+            -webkit-text-size-adjust: 100%;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(80, 0, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(80, 0, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .main-container {
+            max-width: 600px;
+            width: 100%;
+            background: #0b0b0f;
+            border: 1px solid #1f1f2a;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+            position: relative;
+        }
+
+        .header {
+            border-bottom: 1px solid #1f1f2a;
+            background: #0a0a0e;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo-icon {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .logo {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            color: #e0e0e0;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .logo:hover {
+            color: #b77eff;
+        }
+
+        .logo span {
+            color: #b77eff;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-right .badge {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            background: #1a1a24;
+            color: #b77eff;
+            padding: 4px 12px;
+            border: 1px solid #2a2a35;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hero {
+            padding: 1.5rem 1.5rem 1rem;
+            border-bottom: 1px solid #1f1f2a;
+        }
+
+        .hero h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .hero h1 span {
+            color: #b77eff;
+        }
+
+        .hero .sub {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            color: #666;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .tetris-section {
+            padding: 1.5rem;
+        }
+
+        .tetris-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            padding: 0 4px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .score-box {
+            background: #0d0a06;
+            padding: 6px 16px 6px 14px;
+            border-radius: 4px;
+            border: 1px solid #2a2a35;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #c4a87a;
+            font-weight: 600;
+            font-size: 0.85rem;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .score-box span {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #f5d742;
+            min-width: 70px;
+            text-align: right;
+        }
+
+        .info-box {
+            background: #0d0a06;
+            padding: 4px 14px;
+            border-radius: 4px;
+            border: 1px solid #2a2a35;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            color: #a08860;
+        }
+
+        .info-box span {
+            color: #e0e0e0;
+            font-weight: 700;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .board-wrapper {
+            background: #0a0806;
+            border: 1px solid #1f1f2a;
+            padding: 10px;
+        }
+
+        #tetrisCanvas {
+            display: block;
+            background: #0f0c08;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 10 / 20;
+            image-rendering: pixelated;
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 100px;
+        }
+
+        .next-box {
+            background: #0a0806;
+            border: 1px solid #1f1f2a;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .next-box .label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        #nextCanvas {
+            display: block;
+            background: #0f0c08;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 4 / 4;
+            image-rendering: pixelated;
+            margin: 0 auto;
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .ctrl-btn {
+            background: #1a1a24;
+            border: 1px solid #2a2a35;
+            color: #e0e0e0;
+            padding: 10px 0;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.1s;
+            font-family: 'Space Mono', monospace;
+            border-radius: 0;
+        }
+
+        .ctrl-btn:active {
+            transform: scale(0.95);
+            background: #2a2a3a;
+        }
+
+        .ctrl-btn.wide {
+            grid-column: span 3;
+        }
+
+        .ctrl-btn.danger {
+            border-color: #5a1a1a;
+            color: #ff6b6b;
+        }
+
+        .ctrl-btn.danger:active {
+            background: #2a0a0a;
+        }
+
+        .result-box {
+            background: #0d0a06;
+            padding: 14px 16px;
+            border: 1px solid #1f1f2a;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #c4a87a;
+            margin-bottom: 1rem;
+            transition: 0.2s;
+        }
+
+        .result-box.game-over {
+            color: #ff6b35;
+            border-color: #5a1a0a;
+            box-shadow: 0 0 30px #ff6b3515;
+        }
+
+        .result-box.win {
+            color: #f5d742;
+            border-color: #f5d742;
+        }
+
+        .footer {
+            border-top: 1px solid #1f1f2a;
+            padding: 1.5rem 1.5rem 1.2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer .initiative-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .footer .footer-logo {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            opacity: 0.7;
+            transition: 0.2s;
+            border-radius: 4px;
+        }
+
+        .footer .footer-logo:hover {
+            opacity: 1;
+        }
+
+        .footer .footer-signature {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem;
+            color: #3a3a4a;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        .footer a {
+            color: #b77eff;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 550px) {
+            .main-container {
+                max-width: 100%;
+            }
+            .hero h1 {
+                font-size: 1.4rem;
+            }
+            .tetris-top {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .score-box, .info-box {
+                justify-content: center;
+            }
+            .game-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .side-panel {
+                min-width: unset;
+                width: 100%;
+                max-width: 220px;
+            }
+            .control-buttons {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+            .footer .footer-logo {
+                width: 40px;
+                height: 40px;
+            }
+            .header-logo-icon {
+                width: 28px;
+                height: 28px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .header {
+                padding: 0.7rem 1rem;
+            }
+            .logo {
+                font-size: 1.1rem;
+            }
+            .header-logo-icon {
+                width: 24px;
+                height: 24px;
+            }
+            .hero {
+                padding: 1rem 1rem 0.8rem;
+            }
+            .hero h1 {
+                font-size: 1.2rem;
+            }
+            .tetris-section {
+                padding: 1rem;
+            }
+            .result-box {
+                font-size: 0.85rem;
+                min-height: 44px;
+                padding: 10px 12px;
+            }
+            .footer .footer-logo {
+                width: 34px;
+                height: 34px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <!-- ХЕДЕР -->
+        <div class="header">
+            <div class="header-left">
+                <a href="https://fmb-oi.ru/index.html" class="logo" target="_blank">f<span>mb</span></a>
+            </div>
+            <div class="header-right">
+                <span class="badge"><i class="fas fa-cube"></i> тетрис</span>
+            </div>
+        </div>
+
+        <!-- ГЕРОЙ -->
+        <div class="hero">
+            <h1>// ТЕТРИС <span>:🧱</span></h1>
+            <div class="sub">собирай линии и зарабатывай очки</div>
+        </div>
+
+        <!-- ТЕТРИС -->
+        <div class="tetris-section">
+            <div class="tetris-top">
+                <div class="score-box">
+                    🏆 <span id="scoreDisplay">0</span>
+                </div>
+                <div class="info-box">
+                    линии <span id="linesDisplay">0</span>
+                </div>
+            </div>
+
+            <div class="game-container">
+                <div class="board-wrapper">
+                    <canvas id="tetrisCanvas" width="200" height="400"></canvas>
+                </div>
+                <div class="side-panel">
+                    <div class="next-box">
+                        <div class="label">следующая</div>
+                        <canvas id="nextCanvas" width="80" height="80"></canvas>
+                    </div>
+                    <div class="control-buttons">
+                        <button class="ctrl-btn" id="moveLeft">◀</button>
+                        <button class="ctrl-btn" id="moveRight">▶</button>
+                        <button class="ctrl-btn" id="rotateBtn">↻</button>
+                        <button class="ctrl-btn" id="hardDropBtn">⬇⬇</button>
+                        <button class="ctrl-btn" id="moveDown">⬇</button>
+                        <button class="ctrl-btn danger" id="pauseBtn">⏸</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-box" id="resultBox">🧱 играй!</div>
+        </div>
+
+        <!-- ФУТЕР -->
+        <div class="footer">
+            <span class="initiative-label">инициатива от</span>
+            <a href="https://fmb-oi.ru/index.html" target="_blank">
+                <img src="logo.png" alt="logo" class="footer-logo" />
+            </a>
+            <div class="footer-signature">| — <a href="https://fmb-oi.ru/index.html" target="_blank">fmb</a> — |</div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ----- ТЕТРИС КОНСТАНТЫ -----
+            const COLS = 10;
+            const ROWS = 20;
+            const BLOCK_SIZE = 20;
+
+            const canvas = document.getElementById('tetrisCanvas');
+            const ctx = canvas.getContext('2d');
+            const nextCanvas = document.getElementById('nextCanvas');
+            const nextCtx = nextCanvas.getContext('2d');
+
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const linesDisplay = document.getElementById('linesDisplay');
+            const resultBox = document.getElementById('resultBox');
+
+            // ----- ФИГУРЫ -----
+            const SHAPES = [
+                { // I
+                    matrix: [[1,1,1,1]],
+                    color: '#00f0f0'
+                },
+                { // O
+                    matrix: [[1,1],[1,1]],
+                    color: '#f0f000'
+                },
+                { // T
+                    matrix: [[0,1,0],[1,1,1]],
+                    color: '#a000f0'
+                },
+                { // S
+                    matrix: [[0,1,1],[1,1,0]],
+                    color: '#00f000'
+                },
+                { // Z
+                    matrix: [[1,1,0],[0,1,1]],
+                    color: '#f00000'
+                },
+                { // L
+                    matrix: [[1,0,0],[1,1,1]],
+                    color: '#f0a000'
+                },
+                { // J
+                    matrix: [[0,0,1],[1,1,1]],
+                    color: '#0000f0'
+                }
+            ];
+
+            // ----- СОСТОЯНИЕ -----
+            let board = [];
+            let currentPiece = null;
+            let nextPiece = null;
+            let score = 0;
+            let linesCleared = 0;
+            let gameOver = false;
+            let paused = false;
+            let dropInterval = null;
+            const BASE_INTERVAL = 400;
+            let highScore = parseInt(localStorage.getItem('tetrisHighScore')) || 0;
+
+            // ----- ИНИЦИАЛИЗАЦИЯ -----
+            function initBoard() {
+                board = [];
+                for (let r = 0; r < ROWS; r++) {
+                    board.push(new Array(COLS).fill(0));
+                }
+            }
+
+            function randomPiece() {
+                const idx = Math.floor(Math.random() * SHAPES.length);
+                const shape = SHAPES[idx];
+                return {
+                    matrix: shape.matrix.map(row => [...row]),
+                    color: shape.color,
+                    x: Math.floor((COLS - shape.matrix[0].length) / 2),
+                    y: 0
+                };
+            }
+
+            function spawnPiece() {
+                if (!nextPiece) {
+                    nextPiece = randomPiece();
+                }
+                currentPiece = {
+                    matrix: nextPiece.matrix.map(row => [...row]),
+                    color: nextPiece.color,
+                    x: Math.floor((COLS - nextPiece.matrix[0].length) / 2),
+                    y: 0
+                };
+                nextPiece = randomPiece();
+
+                if (collision(currentPiece.matrix, currentPiece.x, currentPiece.y)) {
+                    gameOver = true;
+                    clearInterval(dropInterval);
+                    if (score > highScore) {
+                        highScore = score;
+                        localStorage.setItem('tetrisHighScore', String(highScore));
+                    }
+                    resultBox.innerHTML = `💀 ИГРА ОКОНЧЕНА!<br>Счёт: ${score} | Рекорд: ${highScore}`;
+                    resultBox.className = 'result-box game-over';
+                    currentPiece = null;
+                }
+                draw();
+                drawNext();
+            }
+
+            // ----- КОЛЛИЗИЯ -----
+            function collision(matrix, offsetX, offsetY) {
+                for (let r = 0; r < matrix.length; r++) {
+                    for (let c = 0; c < matrix[0].length; c++) {
+                        if (matrix[r][c] !== 0) {
+                            const boardX = offsetX + c;
+                            const boardY = offsetY + r;
+                            if (boardX < 0 || boardX >= COLS || boardY >= ROWS || boardY < 0) {
+                                return true;
+                            }
+                            if (boardY >= 0 && board[boardY][boardX] !== 0) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+
+            // ----- ЗАКРЕПЛЕНИЕ -----
+            function lockPiece() {
+                if (!currentPiece) return;
+                const { matrix, x, y, color } = currentPiece;
+                for (let r = 0; r < matrix.length; r++) {
+                    for (let c = 0; c < matrix[0].length; c++) {
+                        if (matrix[r][c] !== 0) {
+                            const boardY = y + r;
+                            const boardX = x + c;
+                            if (boardY >= 0 && boardY < ROWS && boardX >= 0 && boardX < COLS) {
+                                board[boardY][boardX] = color;
+                            }
+                        }
+                    }
+                }
+                clearLines();
+                spawnPiece();
+                draw();
+            }
+
+            // ----- ОЧИСТКА ЛИНИЙ (оригинальная система очков) -----
+            function clearLines() {
+                let cleared = 0;
+                for (let r = ROWS - 1; r >= 0; ) {
+                    let full = true;
+                    for (let c = 0; c < COLS; c++) {
+                        if (board[r][c] === 0) {
+                            full = false;
+                            break;
+                        }
+                    }
+                    if (full) {
+                        board.splice(r, 1);
+                        board.unshift(new Array(COLS).fill(0));
+                        cleared++;
+                        r++;
+                    }
+                    r--;
+                }
+
+                if (cleared > 0) {
+                    // Оригинальная система очков Tetris:
+                    // 1 линия = 100, 2 = 300, 3 = 500, 4 = 800
+                    const points = [0, 100, 300, 500, 800];
+                    const addScore = points[Math.min(cleared, 4)] || 800;
+                    score += addScore;
+                    linesCleared += cleared;
+                    updateUI();
+                    resultBox.textContent = `✨ +${addScore} очков (${cleared} лин.)`;
+                    resultBox.className = 'result-box win';
+                    setTimeout(() => {
+                        if (!gameOver) {
+                            resultBox.textContent = '🧱 играй!';
+                            resultBox.className = 'result-box';
+                        }
+                    }, 1200);
+                }
+            }
+
+            // ----- ДВИЖЕНИЕ -----
+            function movePiece(dx, dy) {
+                if (!currentPiece || gameOver || paused) return false;
+                const { matrix, x, y } = currentPiece;
+                if (!collision(matrix, x + dx, y + dy)) {
+                    currentPiece.x += dx;
+                    currentPiece.y += dy;
+                    draw();
+                    return true;
+                }
+                if (dy === 1) {
+                    lockPiece();
+                    draw();
+                }
+                return false;
+            }
+
+            function rotatePiece() {
+                if (!currentPiece || gameOver || paused) return;
+                const matrix = currentPiece.matrix;
+                const rotated = matrix[0].map((_, idx) => matrix.map(row => row[idx]).reverse());
+                if (!collision(rotated, currentPiece.x, currentPiece.y)) {
+                    currentPiece.matrix = rotated;
+                    draw();
+                } else {
+                    if (!collision(rotated, currentPiece.x - 1, currentPiece.y)) {
+                        currentPiece.matrix = rotated;
+                        currentPiece.x -= 1;
+                        draw();
+                    } else if (!collision(rotated, currentPiece.x + 1, currentPiece.y)) {
+                        currentPiece.matrix = rotated;
+                        currentPiece.x += 1;
+                        draw();
+                    }
+                }
+            }
+
+            function hardDrop() {
+                if (!currentPiece || gameOver || paused) return;
+                while (!collision(currentPiece.matrix, currentPiece.x, currentPiece.y + 1)) {
+                    currentPiece.y++;
+                }
+                lockPiece();
+                draw();
+            }
+
+            // ----- ОТРИСОВКА -----
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        const color = board[r][c];
+                        if (color !== 0) {
+                            ctx.fillStyle = color;
+                            ctx.fillRect(c * BLOCK_SIZE, r * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+                            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                            ctx.fillRect(c * BLOCK_SIZE + 2, r * BLOCK_SIZE + 2, 4, 4);
+                        } else {
+                            ctx.strokeStyle = '#1a1a1a';
+                            ctx.lineWidth = 0.5;
+                            ctx.strokeRect(c * BLOCK_SIZE, r * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                        }
+                    }
+                }
+
+                if (currentPiece && !gameOver) {
+                    const { matrix, x, y, color } = currentPiece;
+                    for (let r = 0; r < matrix.length; r++) {
+                        for (let c = 0; c < matrix[0].length; c++) {
+                            if (matrix[r][c] !== 0) {
+                                const boardX = (x + c) * BLOCK_SIZE;
+                                const boardY = (y + r) * BLOCK_SIZE;
+                                ctx.fillStyle = color;
+                                ctx.fillRect(boardX, boardY, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+                                ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                                ctx.fillRect(boardX + 2, boardY + 2, 5, 5);
+                            }
+                        }
+                    }
+                }
+
+                // ghost
+                if (currentPiece && !gameOver) {
+                    let ghostY = currentPiece.y;
+                    while (!collision(currentPiece.matrix, currentPiece.x, ghostY + 1)) {
+                        ghostY++;
+                    }
+                    const { matrix, x, color } = currentPiece;
+                    for (let r = 0; r < matrix.length; r++) {
+                        for (let c = 0; c < matrix[0].length; c++) {
+                            if (matrix[r][c] !== 0) {
+                                const boardX = (x + c) * BLOCK_SIZE;
+                                const boardY = (ghostY + r) * BLOCK_SIZE;
+                                ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                                ctx.lineWidth = 1;
+                                ctx.strokeRect(boardX, boardY, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+                            }
+                        }
+                    }
+                }
+            }
+
+            function drawNext() {
+                nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+                if (!nextPiece) return;
+                const matrix = nextPiece.matrix;
+                const color = nextPiece.color;
+                const blockSize = 20;
+                const cols = matrix[0].length;
+                const rows = matrix.length;
+                const offsetX = (4 - cols) * blockSize / 2;
+                const offsetY = (4 - rows) * blockSize / 2;
+
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if (matrix[r][c] !== 0) {
+                            const x = offsetX + c * blockSize;
+                            const y = offsetY + r * blockSize;
+                            nextCtx.fillStyle = color;
+                            nextCtx.fillRect(x, y, blockSize - 1, blockSize - 1);
+                            nextCtx.fillStyle = 'rgba(255,255,255,0.1)';
+                            nextCtx.fillRect(x + 2, y + 2, 4, 4);
+                        }
+                    }
+                }
+            }
+
+            function updateUI() {
+                scoreDisplay.textContent = score;
+                linesDisplay.textContent = linesCleared;
+            }
+
+            // ----- УПРАВЛЕНИЕ ИГРОЙ -----
+            function startGame() {
+                initBoard();
+                score = 0;
+                linesCleared = 0;
+                gameOver = false;
+                paused = false;
+                updateUI();
+                resultBox.textContent = '🧱 играй!';
+                resultBox.className = 'result-box';
+                nextPiece = randomPiece();
+                spawnPiece();
+                draw();
+                drawNext();
+                if (dropInterval) clearInterval(dropInterval);
+                dropInterval = setInterval(() => {
+                    if (!paused && !gameOver && currentPiece) {
+                        movePiece(0, 1);
+                    }
+                }, BASE_INTERVAL);
+            }
+
+            // ----- ОБРАБОТЧИКИ -----
+            document.getElementById('moveLeft').addEventListener('click', () => movePiece(-1, 0));
+            document.getElementById('moveRight').addEventListener('click', () => movePiece(1, 0));
+            document.getElementById('moveDown').addEventListener('click', () => movePiece(0, 1));
+            document.getElementById('rotateBtn').addEventListener('click', rotatePiece);
+            document.getElementById('hardDropBtn').addEventListener('click', hardDrop);
+
+            document.getElementById('pauseBtn').addEventListener('click', function() {
+                if (gameOver) return;
+                paused = !paused;
+                this.textContent = paused ? '▶' : '⏸';
+                resultBox.textContent = paused ? '⏸ ПАУЗА' : '🧱 играй!';
+                resultBox.className = paused ? 'result-box' : 'result-box';
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.repeat) return;
+                switch(e.key) {
+                    case 'ArrowLeft': e.preventDefault(); movePiece(-1, 0); break;
+                    case 'ArrowRight': e.preventDefault(); movePiece(1, 0); break;
+                    case 'ArrowDown': e.preventDefault(); movePiece(0, 1); break;
+                    case 'ArrowUp': e.preventDefault(); rotatePiece(); break;
+                    case ' ': e.preventDefault(); hardDrop(); break;
+                    case 'p': case 'P': document.getElementById('pauseBtn').click(); break;
+                }
+            });
+
+            document.querySelector('.main-container').addEventListener('dblclick', function(e) {
+                if (e.target.closest('.main-container') && !e.target.closest('.ctrl-btn')) {
+                    if (confirm('Перезапустить игру?')) {
+                        startGame();
+                    }
+                }
+            });
+
+            // ----- СТАРТ -----
+            startGame();
+        })();
+    </script>
+
+</body>
+</html>
